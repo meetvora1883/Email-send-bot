@@ -44,14 +44,11 @@ async function generateBillImage(data) {
   const filePath = path.join(BILL_DIR, fileName);
 
   // Launch options: use the Render‑installed Chromium if env variable is set
-  const launchOptions = {
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  };
-
-  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-  }
+const launchOptions = {
+  headless: 'new',
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+};
+// No executablePath needed – Puppeteer will find its own Chromium
 
   let browser;
   try {
