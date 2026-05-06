@@ -43,12 +43,11 @@ async function generateBillImage(data) {
   const fileName = `invoice-${uniqueId}.png`;
   const filePath = path.join(BILL_DIR, fileName);
 
-  // Launch options: use the Render‑installed Chromium if env variable is set
-const launchOptions = {
-  headless: 'new',
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-};
-// No executablePath needed – Puppeteer will find its own Chromium
+  // NO executablePath – Puppeteer will use its own browser
+  const launchOptions = {
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  };
 
   let browser;
   try {
