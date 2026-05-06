@@ -1,11 +1,18 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { checkRateLimits, incrementRateLimits } = require('../utils/rateLimiter');
 const { logInfo, logError } = require('../utils/logger');
-const { validateEmail, sanitizeInput, isAuthorized } = require('../utils/validators');
+const { validateEmail, sanitizeInput } = require('../utils/validators');
 const { generateCorrelationId, insertBillLog, updateBillLog } = require('../database/queries');
 const { generateBillImage } = require('../services/invoiceService');
 const { sendWithFailover } = require('../services/mailService');
 const config = require('../utils/config');
+
+// ---- Authorization check (same as mailCommand) ----
+function isAuthorized(member) {
+  if (config.discord.adminRoleId && member.roles.cache.has(config.discord.adminRoleId)) return true;
+  if (config.discord.allowedUsers.length > 0 && config.discord.allowedUsers.includes(member.id)) return true;
+  return (!config.discord.adminRoleId && config.discord.allowedUsers.length === 0);
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,6 +30,7 @@ module.exports = {
   async execute(interactionOrMessage, isPrefix = false) {
     let user, options, replyFn;
 
+    // ---------- Slash command ----------
     if (!isPrefix && interactionOrMessage.isCommand?.()) {
       const interaction = interactionOrMessage;
       user = interaction.user;
@@ -38,7 +46,9 @@ module.exports = {
       };
       await interaction.deferReply();
       replyFn = (content) => interaction.editReply(content);
-    } else if (isPrefix) {
+    }
+    // ---------- Prefix command ----------
+    else if (isPrefix) {
       const message = interactionOrMessage;
       user = message.author;
       const content = message.content.trim();
@@ -67,27 +77,31 @@ module.exports = {
       return;
     }
 
+    // ---------- Authorization ----------
     if (!isAuthorized(interactionOrMessage.member)) {
-      await replyFn('❌ You are not authorized.');
+      await replyFn('❌ You are not authorized to use this command.');
       return;
     }
 
+    // ---------- Rate limiting ----------
     if (!checkRateLimits(user.id)) {
-      await replyFn('❌ Rate limit exceeded.');
+      await replyFn('❌ Rate limit exceeded. Please try again later.');
       return;
     }
 
+    // ---------- Parse items ----------
     let items;
     try {
       items = JSON.parse(options.items);
     } catch (e) {
-      await replyFn('❌ Invalid items JSON.');
+      await replyFn('❌ Invalid items JSON format. Example: [{"sl":1,"particulars":"Oil","rate":"500","amount":"500"}]');
       return;
     }
 
     const correlationId = generateCorrelationId();
     logInfo('BILL', `Bill command from ${user.tag}`, correlationId);
 
+    // ---------- Insert bill log ----------
     const billInsert = insertBillLog({
       recipient: options.recipient,
       subject: options.subject,
@@ -102,6 +116,7 @@ module.exports = {
     });
 
     try {
+      // ---------- Generate invoice image ----------
       const { filePath, html } = await generateBillImage({
         billNumber: billInsert.billNumber,
         date: billInsert.date,
@@ -130,6 +145,7 @@ module.exports = {
         <p><a href="${previewUrl}">View this invoice online</a></p>
       `;
 
+      // ---------- Send email via failover ----------
       const mailResult = await sendWithFailover(
         options.recipient, options.subject, emailBody, user.id, correlationId, null, attachments
       );
@@ -144,9 +160,10 @@ module.exports = {
     } catch (error) {
       logError('BILL', `Error: ${error.message}`, correlationId);
       updateBillLog(billInsert.id, { status: 'failed' });
-      await replyFn(`❌ Error: ${error.message}`);
+      await replyFn(`❌ Error generating or sending invoice: ${error.message}`);
     }
 
+    // ---------- Update rate limits ----------
     incrementRateLimits(user.id);
   }
 };
