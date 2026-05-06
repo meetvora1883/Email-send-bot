@@ -1,3 +1,4 @@
+// src/services/invoiceService.js
 const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
@@ -42,12 +43,19 @@ async function generateBillImage(data) {
   const fileName = `invoice-${uniqueId}.png`;
   const filePath = path.join(BILL_DIR, fileName);
 
+  // Launch options: use the Render‑installed Chromium if env variable is set
+  const launchOptions = {
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  };
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 900 });
     await page.setContent(html, { waitUntil: 'networkidle0' });
