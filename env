@@ -1,0 +1,64 @@
+# Discord
+DISCORD_TOKEN=MTUwMTI0ODUxMjYxMTA2MTkwMA.GdinCc.YbbXSFKFlaKrrwrUV_a_tQkcuxnhZi56LIljnU
+CLIENT_ID=1501248512611061900
+
+AUTO_DEPLOY_COMMANDS=true
+
+
+ADMIN_ROLE_ID=1342054101399375875  # Optional: restrict to this role
+ALLOWED_USERS=1342054101399375875,userid2     # Optional: comma-separated user IDs
+
+# SQLite (no URI needed, file-based)
+DB_PATH=db/database.sqlite
+
+# Gmail SMTP (Primary)
+GMAIL_USER=playax1883@gmail.com
+GMAIL_APP_PASSWORD=gggolvcyzgzwsbep
+
+# SendGrid SMTP (Secondary)
+SENDGRID_USER=apikey
+SENDGRID_PASSWORD=SG.your_sendgrid_api_key
+
+# Mailgun SMTP (Tertiary)
+MAILGUN_USER=postmaster@yourdomain.mailgun.org
+MAILGUN_PASSWORD=your_mailgun_smtp_password
+
+# Bot Settings
+COOLDOWN_SECONDS=30
+QUEUE_DELAY_MS=1500
+MAX_EMAILS_PER_USER_PER_HOUR=5
+GLOBAL_MAX_PER_MINUTE=10
+
+# Provider Daily Limits
+GMAIL_DAILY_LIMIT=2000
+SENDGRID_DAILY_LIMIT=10000
+MAILGUN_DAILY_LIMIT=5000
+
+# Circuit breaker settings
+CIRCUIT_BREAKER_FAILURE_THRESHOLD=3
+CIRCUIT_BREAKER_TIMEOUT_MINUTES=15
+
+# Dead letter queue auto-retry (minutes)
+DLQ_RETRY_INTERVAL_MINUTES=60
+
+# Logging
+LOG_LEVEL=debug  # debug, info, warn, error
+LOG_ROTATION_DAYS=7
+
+GUILD_ID=1342067224269033574
+ALERT_CHANNEL_ID=1393182330499239936
+
+WEB_PORT=11850
+WEB_HOST=http://coconut.fps.ms:11850
+
+
+
+
+
+# Add to .env
+COMPANY_NAME=Your Company Pvt Ltd
+COMPANY_ADDRESS=123 Business Road, Mumbai, India
+COMPANY_PHONE=+91 9876543210
+COMPANY_LOGO_URL=https://yourdomain.com/logo.png  # optional, can be local
+BILL_IMAGE_DIR=generated-bills
+BILL_CLEANUP_DAYS=7
