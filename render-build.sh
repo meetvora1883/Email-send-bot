@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# render-build.sh
 echo "Installing Node dependencies..."
 npm install
 
