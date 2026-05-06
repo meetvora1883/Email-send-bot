@@ -9,6 +9,7 @@
   },
   
   "scripts": {
+    "postinstall": "chmod +x render-build.sh",
     "start": "node src/bot.js",
     "dev": "nodemon src/bot.js",
     "deploy": "node src/deploy-commands.js"
